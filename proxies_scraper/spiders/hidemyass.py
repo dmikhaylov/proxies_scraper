@@ -15,7 +15,6 @@ def unmask_ip(masking_styles, masked_ip_html):
         style_name, replace_style = ms.strip('.} ').split('{')
         html = html.replace(style_name, replace_style)
     html = re.sub(r"(?P<tag></.+?>)(?P<value>[\d\.]+)", r"\1<span>\2</span>", html)
-#    print html
     context = etree.iterparse(BytesIO(html.encode('utf-8')))
     for action, elem in context:
         if elem.tag == 'style':
@@ -39,20 +38,16 @@ class HidemyassSpider(CrawlSpider):
 
     rules = (
         Rule(SgmlLinkExtractor(allow=r'/proxy-list/\d+'), callback='parse_items', follow=True),
-#        Rule(SgmlLinkExtractor(allow=r''))
     )
 
     def parse_items(self, response):
-#        print response.url
         hxs = HtmlXPathSelector(response)
         rows = hxs.select('//td[@class="leftborder timestamp"]/parent::tr')
         for row in rows:
             i = ProxiesScraperItem()
             i['last_update'] = int(row.select('td[@class="leftborder timestamp"]/@rel').extract()[0])
             masking_styles = row.select('td[2]/span/style/text()').extract()[0]
-#            print masking_styles
             masked_ip_html = row.select('td[2]').extract()[0]
-#            print masked_ip_html
             i['ip_address'] = unmask_ip(masking_styles, masked_ip_html)
             i['port'] = int(row.select('td[3]/text()').extract()[0])
             i['country'] = row.select('td[4]/span/text()').extract()[0].strip()
@@ -62,12 +57,3 @@ class HidemyassSpider(CrawlSpider):
             i['anonymity'] = row.select('td[8]/text()').extract()[0].strip()
 
             yield i
-#
-#
-#
-#
-#        i = ProxiesScraperItem()
-#        #i['domain_id'] = hxs.select('//input[@id="sid"]/@value').extract()
-#        #i['name'] = hxs.select('//div[@id="name"]').extract()
-#        #i['description'] = hxs.select('//div[@id="description"]').extract()
-#        return i
