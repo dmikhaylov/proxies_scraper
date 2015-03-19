@@ -34,10 +34,10 @@ def unmask_ip(masking_styles, masked_ip_html):
 class HidemyassSpider(CrawlSpider):
     name = 'hidemyass'
     allowed_domains = ['hidemyass.com']
-    start_urls = ['http://www.hidemyass.com/proxy-list/']
+    start_urls = ['http://proxylist.hidemyass.com/']
 
     rules = (
-        Rule(SgmlLinkExtractor(allow=r'/proxy-list/\d+'), callback='parse_items', follow=True),
+        Rule(SgmlLinkExtractor(allow=r'/\d+'), callback='parse_items', follow=True),
     )
 
     def parse_items(self, response):
@@ -50,9 +50,9 @@ class HidemyassSpider(CrawlSpider):
             masked_ip_html = row.select('td[2]').extract()[0]
             i['ip_address'] = unmask_ip(masking_styles, masked_ip_html)
             i['port'] = int(row.select('td[3]/text()').extract()[0])
-            i['country'] = row.select('td[4]/span/text()').extract()[0].strip()
-            i['speed'] = row.select('td[5]/div/div/@class').extract()[0]
-            i['connection_time'] = row.select('td[6]/div/div/@class').extract()[0]
+            i['country'] = row.select('td[4]/span//text()').extract()[1].strip()
+            i['speed'] = int(row.select('td[5]/div/@rel').extract()[0])
+            i['connection_time'] = int(row.select('td[6]/div/@rel').extract()[0])
             i['type'] = row.select('td[7]/text()').extract()[0].strip()
             i['anonymity'] = row.select('td[8]/text()').extract()[0].strip()
 
